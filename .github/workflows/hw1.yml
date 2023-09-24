@@ -12,6 +12,9 @@ jobs:
             - name: Install Dependencies
               run: go mod download
 
+            - name: Install Assert
+              run: go get github.com/stretchr/testify/assert
+
             - name: Running HW1 Tests
               uses: actions/setup-go@v3
               with:
