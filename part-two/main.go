@@ -17,7 +17,8 @@ func main() {
 	result, err := calc.Calc(expression)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
+		return
 	}
 
 	fmt.Println(result)

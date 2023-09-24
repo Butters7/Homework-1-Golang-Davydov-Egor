@@ -18,7 +18,9 @@ func haveNextNumber(expression string, idx int) bool {
 	return false
 }
 
-func mergeCalculatablesOperations(cArr []iCalculatable, op []string, divisionOrMultiply bool) ([]iCalculatable, []string) {
+// Итерируемся по массиву. Натыкаясь на мат. операцию, смотрим, какие значения в массиве iCalucaltable. Берем левое и правое
+// Затем они удаляются из массива, по итогу получая вместо 2 элементов iCalculatable получается один
+func mergeCalculatablesOperations(cArr []iCalculatable, op []string, divisionOrMultiply bool) ([]iCalculatable, []string, error) {
 	for i := 0; i < len(op); i++ {
 		clearOp := false
 		leftValue := cArr[i]
@@ -30,6 +32,9 @@ func mergeCalculatablesOperations(cArr []iCalculatable, op []string, divisionOrM
 				cArr = append(cArr[:i], &multiply{leftValue, rightValue})
 				clearOp = true
 			} else if op[i] == "/" {
+				if rightValue.Calculate() == 0 {
+					return nil, nil, errors.New("деление на ноль")
+				}
 				cArr = append(cArr[:i], &division{leftValue, rightValue})
 				clearOp = true
 			}
@@ -50,7 +55,7 @@ func mergeCalculatablesOperations(cArr []iCalculatable, op []string, divisionOrM
 		}
 	}
 
-	return cArr, op
+	return cArr, op, nil
 }
 
 func parsingExpression(expression string, countOpenBrackets *int, currentIterator int) (iCalculatable, int, error) {
@@ -71,6 +76,8 @@ LOOP:
 				return nil, -1, errors.New("ошибка в записи выражения")
 			}
 			convertingNumber += curSymbol
+			// При парсинге цифры смотрим следующий символ.
+			// Если он является точкой или цифрой, то парсим дальше, иначе добавляем в массив
 			if !haveNextNumber(expression, curIdx) {
 				number, _ := strconv.ParseFloat(convertingNumber, 64)
 				calculatableArray = append(calculatableArray, &value{number})
@@ -90,6 +97,7 @@ LOOP:
 			operations = append(operations, "/")
 
 		case "(":
+			// Следующее выражение в скобках обрабатывается как обычное выражение без скобок с созданием нового массива и конечным значение
 			(*countOpenBrackets)++
 			var result iCalculatable
 			result, curIdx, err = parsingExpression(expression, countOpenBrackets, curIdx+1)
@@ -108,15 +116,26 @@ LOOP:
 		}
 	}
 
+	// Так как все опирации бинарные, то общее кол-во операций должно быть на один меньше всех цифр
 	if *countOpenBrackets != 0 && curIdx == len(expression) {
 		return nil, -1, errors.New("в выражении присуствует лишняя открывающая скобка")
 	} else if len(operations)+1 != len(calculatableArray) {
 		return nil, -1, errors.New("в выражении присутствуют лишние операции, символы или выражание в скобках пустое")
 	}
 
-	calculatableArray, operations = mergeCalculatablesOperations(calculatableArray, operations, true)
-	calculatableArray, _ = mergeCalculatablesOperations(calculatableArray, operations, false)
+	// Получив операции и iСalculatable выражение сливаем все в одно значение.
+	// Первый приоритет для умножения и деления
+	calculatableArray, operations, err = mergeCalculatablesOperations(calculatableArray, operations, true)
 
+	if err != nil {
+		return nil, -1, err
+	}
+
+	// Второй для сложения и вычитания
+	calculatableArray, _, _ = mergeCalculatablesOperations(calculatableArray, operations, false)
+
+	// Если в конце слияния получилось так, что массив пустой, то значит, что пользователь написа пустое выражение в скобках
+	// () = 0
 	if len(calculatableArray) != 0 {
 		return calculatableArray[0], curIdx, nil
 	} else {
@@ -125,6 +144,7 @@ LOOP:
 }
 
 func Calc(expression string) (float64, error) {
+	//Держим "в уме" количество открытых скобок, чтобы слить их с закрытыми
 	countOpenBrackets := 0
 
 	value, _, err := parsingExpression(expression, &countOpenBrackets, 0)

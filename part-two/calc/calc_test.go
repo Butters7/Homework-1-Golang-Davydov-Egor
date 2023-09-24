@@ -1,8 +1,9 @@
 package calc
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var mainTests = map[string]struct {
@@ -48,15 +49,12 @@ var mainTests = map[string]struct {
 }
 
 func TestMain(t *testing.T) {
+	assert := assert.New(t)
 	for name, test := range mainTests {
+
 		result, err := Calc(test.input)
 
-		if err != nil {
-			t.Fatalf("Test %s failed. %s\n", name, err.Error())
-		} else if result != test.output {
-			t.Fatalf("Test %s failed. Result are not equal. Expected: %f. Current: %f\n", name, test.output, result)
-		}
-
-		fmt.Printf("Test %s passed\n", name)
+		assert.Nil(err, "Test (%s) failed.\n", name)
+		assert.Equal(result, test.output, "Test %s failed. Expected: %f. Current: %f\n", name, test.output, result)
 	}
 }

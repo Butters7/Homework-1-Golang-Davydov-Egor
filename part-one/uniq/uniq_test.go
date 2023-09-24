@@ -1,74 +1,84 @@
 package uniq
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var mainTests = map[string]struct {
-	flags  map[string]string
-	output []string
+	preparingStr string
+	flags        map[string]string
+	output       []string
 }{
 	"Test from GitHub lectures: without parametrs": {
-		flags:  map[string]string{"inputFile": "test_files/test1.txt"},
-		output: []string{"I love music.\n", "\n", "I love music of Kartik.\n", "Thanks.\n", "I love music of Kartik.\n"},
+		preparingStr: "I love music.\nI love music.\nI love music.\n\nI love music of Kartik.\nI love music of Kartik.\nThanks.\nI love music of Kartik.\nI love music of Kartik.",
+		flags:        map[string]string{},
+		output:       []string{"I love music.\n", "\n", "I love music of Kartik.\n", "Thanks.\n", "I love music of Kartik.\n"},
 	},
 	"Test from Github lectures: -c parametr": {
-		flags:  map[string]string{"inputFile": "test_files/test1.txt", "-c": "-c"},
-		output: []string{"3", "I love music.\n", "1", "\n", "2", "I love music of Kartik.\n", "1", "Thanks.\n", "2", "I love music of Kartik.\n"},
+		preparingStr: "I love music.\nI love music.\nI love music.\n\nI love music of Kartik.\nI love music of Kartik.\nThanks.\nI love music of Kartik.\nI love music of Kartik.",
+		flags:        map[string]string{"-c": "-c"},
+		output:       []string{"3", "I love music.\n", "1", "\n", "2", "I love music of Kartik.\n", "1", "Thanks.\n", "2", "I love music of Kartik.\n"},
 	},
 	"Test from Github lectures: -d parametr": {
-		flags:  map[string]string{"inputFile": "test_files/test1.txt", "-d": "-d"},
-		output: []string{"I love music.\n", "I love music of Kartik.\n", "I love music of Kartik.\n"},
+		preparingStr: "I love music.\nI love music.\nI love music.\n\nI love music of Kartik.\nI love music of Kartik.\nThanks.\nI love music of Kartik.\nI love music of Kartik.",
+		flags:        map[string]string{"-d": "-d"},
+		output:       []string{"I love music.\n", "I love music of Kartik.\n", "I love music of Kartik.\n"},
 	},
 	"Test from GitHub lectures: -u parametr": {
-		flags:  map[string]string{"inputFile": "test_files/test1.txt", "-u": "-u"},
-		output: []string{"\n", "Thanks.\n"},
+		preparingStr: "I love music.\nI love music.\nI love music.\n\nI love music of Kartik.\nI love music of Kartik.\nThanks.\nI love music of Kartik.\nI love music of Kartik.",
+		flags:        map[string]string{"-u": "-u"},
+		output:       []string{"\n", "Thanks.\n"},
 	},
 	"Test from GitHub lectures: -i parametr": {
-		flags:  map[string]string{"inputFile": "test_files/test2.txt", "-i": "-i"},
-		output: []string{"I LOVE MUSIC.\n", "\n", "I love MuSIC of Kartik.\n", "Thanks.\n", "I love music of kartik.\n"},
+		preparingStr: "I LOVE MUSIC.\nI love music.\nI LoVe MuSiC.\n\nI love MuSIC of Kartik.\nI love music of kartik.\nThanks.\nI love music of kartik.\nI love MuSIC of Kartik.",
+		flags:        map[string]string{"-i": "-i"},
+		output:       []string{"I LOVE MUSIC.\n", "\n", "I love MuSIC of Kartik.\n", "Thanks.\n", "I love music of kartik.\n"},
 	},
 	"Test from GitHub lectures: -f num parametr": {
-		flags:  map[string]string{"inputFile": "test_files/test3.txt", "-f": "1"},
-		output: []string{"We love music.\n", "\n", "I love music of Kartik.\n", "Thanks.\n"},
+		preparingStr: "We love music.\nI love music.\nThey love music.\n\n\nI love music of Kartik.\nWe love music of Kartik.\nThanks.",
+		flags:        map[string]string{"-f": "1"},
+		output:       []string{"We love music.\n", "\n", "I love music of Kartik.\n", "Thanks.\n"},
 	},
 	"Test from GitHub lectures: -s num parametr": {
-		flags:  map[string]string{"inputFile": "test_files/test4.txt", "-s": "1"},
-		output: []string{"I love music.\n", "\n", "I love music of Kartik.\n", "We love music of Kartik.\n", "Thanks.\n"},
+		preparingStr: "I love music.\nA love music.\nC love music.\n\nI love music of Kartik.\nWe love music of Kartik.\nThanks.",
+		flags:        map[string]string{"-s": "1"},
+		output:       []string{"I love music.\n", "\n", "I love music of Kartik.\n", "We love music of Kartik.\n", "Thanks.\n"},
 	},
 	"Test with 3 parametres #1": {
-		flags:  map[string]string{"inputFile": "test_files/test5.txt", "-u": "-u", "-i": "-i", "-f": "1", "-s": "1"},
-		output: []string{"\n", "The tea is hot!\n", "This tea is not hot.\n"},
+		preparingStr: "I dove music.\nWe love music.\nThey nove music.\n\nThe tea is hot!\nThis tea is not hot.\nThanks.\nThanks.",
+		flags:        map[string]string{"-u": "-u", "-i": "-i", "-f": "1", "-s": "1"},
+		output:       []string{"\n", "The tea is hot!\n", "This tea is not hot.\n"},
 	},
 	"Test with 3 parametres #2": {
-		flags:  map[string]string{"inputFile": "test_files/test5.txt", "-d": "-d", "-i": "-i", "-f": "1", "-s": "1"},
-		output: []string{"I dove music.\n", "Thanks.\n"},
+		preparingStr: "I dove music.\nWe love music.\nThey nove music.\n\nThe tea is hot!\nThis tea is not hot.\nThanks.\nThanks.",
+		flags:        map[string]string{"-d": "-d", "-i": "-i", "-f": "1", "-s": "1"},
+		output:       []string{"I dove music.\n", "Thanks.\n"},
 	},
 	"Test with 3 parametres #3": {
-		flags:  map[string]string{"inputFile": "test_files/test6.txt", "-c": "-c", "-i": "-i", "-f": "2", "-s": "2"},
-		output: []string{"2", "I have a friend\n", "4", "\n", "3", "I love Golang\n"},
+		preparingStr: "I have a friend\nAlice has a friend\n\nCockroach\nZamkroach\n\nI love Golang\nI LoVE gOLANg\nWe love GolANG",
+		flags:        map[string]string{"-c": "-c", "-i": "-i", "-f": "2", "-s": "2"},
+		output:       []string{"2", "I have a friend\n", "4", "\n", "3", "I love Golang\n"},
 	},
-	"Test with empty file": {
-		flags:  map[string]string{"inputFile": "test_files/test7.txt"},
-		output: []string{},
+	"Test with empty string": {
+		preparingStr: "",
+		flags:        map[string]string{},
+		output:       []string{"\n"},
 	},
 }
 
 func TestMain(t *testing.T) {
+	assert := assert.New(t)
 	for name, test := range mainTests {
 
-		result, err := comparison(test.flags)
-		if err != nil || len(result) != len(test.output) {
-			t.Fatalf("Test (%s) failed!\n", name)
-		}
+		result, err := comparison(test.preparingStr, test.flags)
+
+		assert.Nil(err, "Test (%s) failed!\n", name)
+		assert.Equal(len(result), len(test.output), "Test (%s) failed!\n", name)
 
 		for i := 0; i < len(result); i++ {
-			if result[i] != test.output[i] {
-				t.Fatalf("Test (%s) failed", name)
-			}
+			assert.Equal(result[i], test.output[i], "Test (%s) failed!\n", name)
 		}
-
-		fmt.Printf("Test %s:\t OK\n", name)
 	}
 }
