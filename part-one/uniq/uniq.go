@@ -85,7 +85,7 @@ func comparisonWithFlags(curStr, prevStr string, flags map[string]string, uniqSt
 	}
 }
 
-func comparison(preparingStr string, flags map[string]string) ([]string, error) {
+func Uniq(preparingStr string, flags map[string]string) ([]string, error) {
 	arrayStr := strings.Split(preparingStr, "\n")
 
 	answer := make([]string, 0)
@@ -99,15 +99,6 @@ func comparison(preparingStr string, flags map[string]string) ([]string, error) 
 		comparisonWithFlags(curStr, prevStr, flags, &answer, &sequence)
 
 		prevStr = curStr
-	}
-
-	return answer, nil
-}
-
-func Uniq(preparingStr string, flags map[string]string) ([]string, error) {
-	answer, err := comparison(preparingStr, flags)
-	if err != nil {
-		return nil, err
 	}
 
 	return answer, nil

@@ -72,7 +72,7 @@ func TestMain(t *testing.T) {
 	assert := assert.New(t)
 	for name, test := range mainTests {
 
-		result, err := comparison(test.preparingStr, test.flags)
+		result, err := Uniq(test.preparingStr, test.flags)
 
 		assert.Nil(err, "Test (%s) failed!\n", name)
 		assert.Equal(len(result), len(test.output), "Test (%s) failed!\n", name)
