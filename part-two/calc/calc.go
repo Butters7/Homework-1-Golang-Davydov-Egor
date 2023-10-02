@@ -58,7 +58,7 @@ func mergeCalculatablesOperations(cArr []iCalculatable, op []string, divisionOrM
 	return cArr, op, nil
 }
 
-func parsingExpression(expression string, countOpenBrackets *int, currentIterator int) (iCalculatable, int, error) {
+func parsingExpression(expression string, countOpenBrackets int, currentIterator int) (iCalculatable, int, error) {
 	var calculatableArray []iCalculatable
 	var operations []string
 	var convertingNumber string
@@ -98,26 +98,26 @@ LOOP:
 
 		case "(":
 			// Следующее выражение в скобках обрабатывается как обычное выражение без скобок с созданием нового массива и конечным значение
-			(*countOpenBrackets)++
+			countOpenBrackets++
 			var result iCalculatable
 			result, curIdx, err = parsingExpression(expression, countOpenBrackets, curIdx+1)
 			if err != nil {
 				return nil, -1, err
 			}
+			countOpenBrackets--
 			calculatableArray = append(calculatableArray, result)
 
 		case ")":
-			if *countOpenBrackets == 0 {
+			if countOpenBrackets == 0 {
 				return nil, -1, errors.New("в выражении присутствует лишняя закрывающая скобка")
 			}
-			(*countOpenBrackets)--
 			break LOOP
 
 		}
 	}
 
 	// Так как все опирации бинарные, то общее кол-во операций должно быть на один меньше всех цифр
-	if *countOpenBrackets != 0 && curIdx == len(expression) {
+	if countOpenBrackets != 0 && curIdx == len(expression) {
 		return nil, -1, errors.New("в выражении присуствует лишняя открывающая скобка")
 	} else if len(operations)+1 != len(calculatableArray) {
 		return nil, -1, errors.New("в выражении присутствуют лишние операции, символы или выражание в скобках пустое")
@@ -147,7 +147,7 @@ func Calc(expression string) (float64, error) {
 	//Держим "в уме" количество открытых скобок, чтобы слить их с закрытыми
 	countOpenBrackets := 0
 
-	value, _, err := parsingExpression(expression, &countOpenBrackets, 0)
+	value, _, err := parsingExpression(expression, countOpenBrackets, 0)
 
 	if err != nil {
 		return -1, errors.New("Ошибка парсинга выражения: " + err.Error())

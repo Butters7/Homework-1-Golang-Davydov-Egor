@@ -68,7 +68,7 @@ var mainTests = map[string]struct {
 	},
 }
 
-func TestMain(t *testing.T) {
+func TestUniq(t *testing.T) {
 	assert := assert.New(t)
 	for name, test := range mainTests {
 

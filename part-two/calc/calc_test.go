@@ -46,9 +46,13 @@ var mainTests = map[string]struct {
 		input:  "(((((124 + ((5.2 * 5 * ((0 + 1 * 1)))))))))",
 		output: 150,
 	},
+	"Testing \"5+(2+(3+(4)))": {
+		input:  "5+(2+(3+(4)))",
+		output: 14,
+	},
 }
 
-func TestMain(t *testing.T) {
+func TestCalc(t *testing.T) {
 	assert := assert.New(t)
 	for name, test := range mainTests {
 
