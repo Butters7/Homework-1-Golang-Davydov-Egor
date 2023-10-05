@@ -1,0 +1,9 @@
+I have a friend
+Alice has a friend
+
+Cockroach
+Zamkroach
+
+I love Golang
+I LoVE gOLANg
+We love GolANG
